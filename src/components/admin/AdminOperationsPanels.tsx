@@ -18,6 +18,7 @@ import {
   PAYMENT_METHOD_LABELS,
 } from '../../lib/format';
 import type {
+  CustomerSummary,
   Order,
   OrderStatus,
   Product,
@@ -93,26 +94,30 @@ export function OverviewPanel({
               Manage All
             </button>
           </div>
-          <div className="divide-y divide-[#ded5c8]">
-            {orders.slice(0, 6).map((o) => (
-              <div key={o.reference} className="flex items-center justify-between gap-4 px-5 py-3.5 text-sm">
-                <div>
-                  <p className="font-mono text-xs font-medium text-[#1c1917]">{o.reference}</p>
-                  <p className="text-xs text-[#57534e]">
-                    {o.customer.name} · {o.customer.city}
-                  </p>
+          {orders.length === 0 ? (
+            <p className="px-5 py-8 text-xs text-[#78716c]">No customer orders recorded yet.</p>
+          ) : (
+            <div className="divide-y divide-[#ded5c8]">
+              {orders.slice(0, 6).map((o) => (
+                <div key={o.reference} className="flex items-center justify-between gap-4 px-5 py-3.5 text-sm">
+                  <div>
+                    <p className="font-mono text-xs font-medium text-[#1c1917]">{o.reference}</p>
+                    <p className="text-xs text-[#57534e]">
+                      {o.customer.name} · {o.customer.city}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-mono text-xs font-medium text-[#1c1917] tabular-nums">
+                      {formatInr(o.totalInr)}
+                    </p>
+                    <p className={`text-xs ${ORDER_STATUS_META[o.status].toneClass}`}>
+                      {ORDER_STATUS_META[o.status].label}
+                    </p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-mono text-xs font-medium text-[#1c1917] tabular-nums">
-                    {formatInr(o.totalInr)}
-                  </p>
-                  <p className={`text-xs ${ORDER_STATUS_META[o.status].toneClass}`}>
-                    {ORDER_STATUS_META[o.status].label}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="border border-[#ded5c8] bg-[#fcf9f5] lg:col-span-5">
@@ -923,6 +928,103 @@ export function ReviewsPanel({
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
               )}
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function CustomersPanel({ customers }: { customers: CustomerSummary[] }) {
+  const [search, setSearch] = useState('');
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return customers;
+    return customers.filter(
+      (c) =>
+        c.name.toLowerCase().includes(q) ||
+        c.email.toLowerCase().includes(q) ||
+        c.city.toLowerCase().includes(q) ||
+        c.state.toLowerCase().includes(q) ||
+        c.phone.toLowerCase().includes(q)
+    );
+  }, [customers, search]);
+
+  const totalSpent = customers.reduce((sum, c) => sum + c.totalSpentInr, 0);
+
+  return (
+    <div className="space-y-5">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="border border-[#ded5c8] bg-[#fcf9f5] p-5">
+          <p className="text-xs tracking-wider uppercase text-[#78716c]">Total Customers</p>
+          <p className="mt-2 font-mono text-2xl font-medium text-[#1c1917] tabular-nums">
+            {customers.length}
+          </p>
+        </div>
+        <div className="border border-[#ded5c8] bg-[#fcf9f5] p-5">
+          <p className="text-xs tracking-wider uppercase text-[#78716c]">Repeat Buyers</p>
+          <p className="mt-2 font-mono text-2xl font-medium text-[#1c1917] tabular-nums">
+            {customers.filter((c) => c.orderCount > 1).length}
+          </p>
+        </div>
+        <div className="border border-[#ded5c8] bg-[#fcf9f5] p-5">
+          <p className="text-xs tracking-wider uppercase text-[#78716c]">Lifetime Spend</p>
+          <p className="mt-2 font-mono text-2xl font-medium text-[#1c1917] tabular-nums">
+            {formatInr(totalSpent)}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search customer name, email, city…"
+          className="w-72 border border-[#ded5c8] bg-[#fcf9f5] px-3 py-2 text-sm text-[#1c1917] focus:border-[#1c1917] focus:outline-none"
+        />
+        <p className="text-xs text-[#78716c]">
+          Showing {filtered.length} of {customers.length} customer(s)
+        </p>
+      </div>
+
+      <div className="divide-y divide-[#ded5c8] border border-[#ded5c8] bg-[#fcf9f5]">
+        {customers.length === 0 ? (
+          <p className="px-6 py-10 text-center text-sm text-[#78716c]">
+            No customers in the database yet. Customer records are created automatically when orders
+            are placed.
+          </p>
+        ) : filtered.length === 0 ? (
+          <p className="px-6 py-10 text-center text-sm text-[#78716c]">No matching customers.</p>
+        ) : (
+          filtered.map((customer) => (
+            <div
+              key={customer.id}
+              className="flex flex-col justify-between gap-4 p-4 sm:flex-row sm:items-center sm:p-5"
+            >
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-[#1c1917]">{customer.name}</p>
+                <p className="mt-0.5 text-xs text-[#57534e]">
+                  {customer.email} · {customer.phone}
+                </p>
+                <p className="mt-0.5 text-xs text-[#78716c]">
+                  {customer.city}, {customer.state} {customer.pincode}
+                </p>
+              </div>
+              <div className="text-left sm:text-right">
+                <p className="font-mono text-sm font-medium text-[#1c1917] tabular-nums">
+                  {formatInr(customer.totalSpentInr)}
+                </p>
+                <p className="text-xs text-[#57534e]">
+                  {customer.orderCount} order{customer.orderCount === 1 ? '' : 's'}
+                </p>
+                <p className="text-[11px] text-[#78716c]">
+                  Last order:{' '}
+                  {customer.lastOrderAt ? formatShortDate(customer.lastOrderAt) : '—'}
+                </p>
+              </div>
             </div>
           ))
         )}

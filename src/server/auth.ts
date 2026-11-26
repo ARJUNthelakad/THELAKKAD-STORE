@@ -95,7 +95,8 @@ export function setSessionCookie(req: Request, res: Response, token: string): vo
   const isSecure =
     req.secure ||
     req.headers['x-forwarded-proto'] === 'https' ||
-    process.env.NODE_ENV === 'production';
+    process.env.NODE_ENV === 'production' ||
+    process.env.VERCEL === '1';
   const maxAge = Math.floor(SESSION_TTL_MS / 1000);
   const parts = [
     `${SESSION_COOKIE_NAME}=${encodeURIComponent(token)}`,
@@ -115,7 +116,8 @@ export function clearSessionCookie(req: Request, res: Response): void {
   const isSecure =
     req.secure ||
     req.headers['x-forwarded-proto'] === 'https' ||
-    process.env.NODE_ENV === 'production';
+    process.env.NODE_ENV === 'production' ||
+    process.env.VERCEL === '1';
   const parts = [`${SESSION_COOKIE_NAME}=`, 'Path=/', 'HttpOnly', 'Max-Age=0'];
   if (isSecure) {
     parts.push('Secure', 'SameSite=None', 'Partitioned');
@@ -131,10 +133,14 @@ export function verifyCsrfRequest(req: Request): boolean {
   }
   const origin = req.headers.origin;
   const host = req.headers.host;
-  if (origin && host) {
+  const forwardedHost =
+    typeof req.headers['x-forwarded-host'] === 'string'
+      ? req.headers['x-forwarded-host'].split(',')[0].trim()
+      : '';
+  if (origin && (host || forwardedHost)) {
     try {
       const originUrl = new URL(origin);
-      if (originUrl.host === host) {
+      if (originUrl.host === host || (forwardedHost && originUrl.host === forwardedHost)) {
         return true;
       }
     } catch {

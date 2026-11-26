@@ -84,6 +84,20 @@ export interface OrderCustomer {
   pincode: string;
 }
 
+export interface CustomerSummary {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  city: string;
+  state: string;
+  pincode: string;
+  orderCount: number;
+  totalSpentInr: number;
+  lastOrderAt: string | null;
+  createdAt: string;
+}
+
 export interface Order {
   reference: string;
   createdAt: string;

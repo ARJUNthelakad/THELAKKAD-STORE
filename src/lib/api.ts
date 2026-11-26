@@ -2,6 +2,7 @@ import type {
   AuthStatus,
   Category,
   Coupon,
+  CustomerSummary,
   Order,
   OrderStatus,
   PaymentMethod,
@@ -210,6 +211,10 @@ export function resendVerificationEmail(email: string): Promise<{
 
 export function fetchAdminOrders(): Promise<{ orders: Order[] }> {
   return request('/api/admin/orders');
+}
+
+export function fetchAdminCustomers(): Promise<{ customers: CustomerSummary[] }> {
+  return request('/api/admin/customers');
 }
 
 export function patchAdminOrderStatus(
