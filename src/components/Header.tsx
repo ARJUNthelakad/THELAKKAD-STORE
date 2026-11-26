@@ -23,7 +23,6 @@ export function Header() {
       to: '/orders',
       active: pathname.startsWith('/orders'),
     },
-    { label: 'Admin', to: '/admin', active: pathname.startsWith('/admin') },
   ];
 
   return (
