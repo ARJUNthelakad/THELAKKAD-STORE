@@ -83,7 +83,9 @@ interface PersistedState {
 }
 
 const CURRENT_CATALOG_VERSION = 2;
-const DATA_DIR = path.resolve(process.cwd(), 'data');
+const DATA_DIR = process.env.VERCEL
+  ? path.join('/tmp', 'thelakkad-data')
+  : path.resolve(process.cwd(), 'data');
 const STORE_FILE = path.join(DATA_DIR, 'store.json');
 
 function createSeedOrders(): Order[] {

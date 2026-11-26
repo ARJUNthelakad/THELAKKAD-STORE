@@ -4,7 +4,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import express from 'express';
 import type { NextFunction, Request, Response } from 'express';
-import { createServer as createViteServer } from 'vite';
 import type {
   CouponKind,
   MediaKind,
@@ -80,8 +79,10 @@ import {
   type StaffRecord,
 } from './src/server/db';
 
-const PORT = 3000;
-const UPLOADS_DIR = path.resolve(process.cwd(), 'uploads');
+const PORT = Number(process.env.PORT) || 3000;
+const UPLOADS_DIR = process.env.VERCEL
+  ? path.join('/tmp', 'thelakkad-uploads')
+  : path.resolve(process.cwd(), 'uploads');
 if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
@@ -243,9 +244,8 @@ function requireAdmin(req: AuthedRequest, res: Response, next: NextFunction): vo
   next();
 }
 
-async function startServer(): Promise<void> {
-  const app = express();
-  app.set('trust proxy', 1);
+const app = express();
+app.set('trust proxy', 1);
 
   // Basic security headers
   app.use((_req, res, next) => {
@@ -1365,26 +1365,40 @@ async function startServer(): Promise<void> {
   // VITE DEV MIDDLEWARE / PRODUCTION STATIC SERVING
   // =========================================================================
 
-  if (process.env.NODE_ENV !== 'production') {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-    });
-    app.use(vite.middlewares);
-  } else {
+  function mountStaticFrontend(): void {
     const distDir = path.resolve(process.cwd(), 'dist');
-    app.use(express.static(distDir));
-    app.get('*', (_req, res) => {
-      res.sendFile(path.join(distDir, 'index.html'));
+    if (fs.existsSync(path.join(distDir, 'index.html'))) {
+      app.use(express.static(distDir));
+      app.get('*', (_req, res) => {
+        res.sendFile(path.join(distDir, 'index.html'));
+      });
+    }
+  }
+
+  async function startServer(): Promise<void> {
+    if (process.env.NODE_ENV !== 'production') {
+      const { createServer: createViteServer } = await import('vite');
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: 'spa',
+      });
+      app.use(vite.middlewares);
+    } else {
+      mountStaticFrontend();
+    }
+
+    app.listen(PORT, '0.0.0.0', () => {
+      console.info(`Thelakkad Store server listening on http://localhost:${PORT}`);
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.info(`Thelakkad Store server listening on http://localhost:${PORT}`);
-  });
-}
+  if (process.env.VERCEL) {
+    mountStaticFrontend();
+  } else {
+    startServer().catch((err) => {
+      console.error('Failed to start server:', err);
+      process.exit(1);
+    });
+  }
 
-startServer().catch((err) => {
-  console.error('Failed to start server:', err);
-  process.exit(1);
-});
+  export default app;
