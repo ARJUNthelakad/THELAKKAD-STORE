@@ -1,0 +1,55 @@
+{
+  "name": "thelakkad-store",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "node ./node_modules/vite/bin/vite.js",
+    "build": "node ./node_modules/vite/bin/vite.js build && node scripts/postbuild.mjs",
+    "preview": "node ./node_modules/vite/bin/vite.js preview",
+    "typecheck": "node ./node_modules/typescript/lib/tsc.js --noEmit",
+    "dev:vercel": "vercel dev",
+    "db:generate": "node ./node_modules/drizzle-kit/bin.cjs generate",
+    "db:migrate": "node ./node_modules/drizzle-kit/bin.cjs migrate",
+    "db:push": "node ./node_modules/drizzle-kit/bin.cjs push"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1175.0",
+    "@aws-sdk/s3-presigned-post": "^3.1175.0",
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource/instrument-serif": "^5.3.0",
+    "@neon/config": "^1.14.5",
+    "@neon/env": "^2.1.8",
+    "@neon/realtime": "^0.2.1",
+    "@neon/realtime-react": "^0.2.0",
+    "@neondatabase/serverless": "^1.2.0",
+    "dotenv": "^18.0.10",
+    "hono": "^4.13.0",
+    "lucide-react": "^1.60.0",
+    "motion": "^14.4.0",
+    "pg": "^8.23.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-router": "^8.5.0"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.64.0",
+    "@cloudflare/workers-types": "^5.20261019.0",
+    "@tailwindcss/vite": "^4.3.0",
+    "@types/node": "^26.6.6",
+    "@types/pg": "^8.23.1",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^6.1.0",
+    "drizzle-kit": "^0.31.11",
+    "drizzle-orm": "^0.45.4",
+    "neon": "^9.4.0",
+    "tailwindcss": "^4.3.0",
+    "typescript": "^5.9.0",
+    "vite": "^8.3.0",
+    "wrangler": "^4.151.0"
+  }
+}

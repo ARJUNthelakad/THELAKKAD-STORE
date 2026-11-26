@@ -1,0 +1,2 @@
+@neondatabase/serverless@latest
+pg@latest

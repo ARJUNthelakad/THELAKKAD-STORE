@@ -1,0 +1,6 @@
+{
+  "name": "Thelakkad Store",
+  "description": "Stoneware, linen and light made in short runs by a small studio in Mumbai.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
